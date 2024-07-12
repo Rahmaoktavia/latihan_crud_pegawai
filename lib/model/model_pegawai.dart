@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final modelPegawai = modelPegawaiFromJson(jsonString);
-
 import 'dart:convert';
 
 ModelPegawai modelPegawaiFromJson(String str) => ModelPegawai.fromJson(json.decode(str));
@@ -38,6 +34,8 @@ class Datum {
   String lastname;
   String phonenumber;
   String email;
+  String jeniskelamin;
+  String status;
 
   Datum({
     required this.id,
@@ -45,6 +43,8 @@ class Datum {
     required this.lastname,
     required this.phonenumber,
     required this.email,
+    required this.jeniskelamin,
+    required this.status,
   });
 
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
@@ -53,6 +53,8 @@ class Datum {
     lastname: json["lastname"],
     phonenumber: json["phonenumber"],
     email: json["email"],
+    jeniskelamin: json["jeniskelamin"],
+    status: json["status"],
   );
 
   Map<String, dynamic> toJson() => {
@@ -61,5 +63,7 @@ class Datum {
     "lastname": lastname,
     "phonenumber": phonenumber,
     "email": email,
+    "jeniskelamin": jeniskelamin,
+    "status": status,
   };
 }

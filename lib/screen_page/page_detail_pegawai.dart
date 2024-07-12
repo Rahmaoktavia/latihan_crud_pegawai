@@ -11,7 +11,7 @@ class DetailPegawaiScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Detail Pegawai'),
-        backgroundColor: Colors.blue, // Ubah warna background AppBar menjadi biru
+        backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
@@ -34,6 +34,26 @@ class DetailPegawaiScreen extends StatelessWidget {
             Text(
               '${pegawai.firstname} ${pegawai.lastname}',
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Jenis Kelamin:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+            ),
+            SizedBox(height: 5),
+            Text(
+              '${pegawai.jeniskelamin}',
+              style: TextStyle(fontSize: 18),
+            ),
+            SizedBox(height: 20),
+            Text(
+              'Status:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blue),
+            ),
+            SizedBox(height: 5),
+            Text(
+              '${pegawai.status}',
+              style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 20),
             Text(

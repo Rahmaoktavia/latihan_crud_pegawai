@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:latihan_crud_pegawai/model/model_pegawai.dart';
-
 class AddPegawaiScreen extends StatefulWidget {
   @override
   _AddPegawaiScreenState createState() => _AddPegawaiScreenState();
@@ -14,6 +12,9 @@ class _AddPegawaiScreenState extends State<AddPegawaiScreen> {
   final TextEditingController lastnameController = TextEditingController();
   final TextEditingController phonenumberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+
+  String selectedGender = 'Laki-laki';
+  String selectedStatus = 'Pegawai Tetap';
 
   final _formKey = GlobalKey<FormState>();
 
@@ -30,17 +31,30 @@ class _AddPegawaiScreenState extends State<AddPegawaiScreen> {
 
       try {
         final response = await http.post(
-          Uri.parse('http://192.168.40.142/pegawai/addPegawai.php'),
+          Uri.parse('http://192.168.226.142/pegawai/addPegawai.php'),
           headers: {'Content-Type': 'application/json'},
           body: json.encode({
             'firstname': firstname,
             'lastname': lastname,
             'phonenumber': phonenumber,
             'email': email,
+            'jeniskelamin': selectedGender,
+            'status': selectedStatus,
           }),
         );
+
         if (response.statusCode == 200) {
-          Navigator.pop(context, true); // Signal success to previous screen
+          final jsonResponse = json.decode(response.body);
+
+          if (jsonResponse.containsKey('is_success') && jsonResponse['is_success'] is bool) {
+            if (jsonResponse['is_success']) {
+              Navigator.pop(context, true); // Signal success to previous screen
+            } else {
+              showErrorSnackBar(jsonResponse['message'] ?? 'Failed to add pegawai');
+            }
+          } else {
+            showErrorSnackBar('Failed to add pegawai: Invalid server response');
+          }
         } else {
           showErrorSnackBar('Failed to add pegawai');
         }
@@ -60,73 +74,113 @@ class _AddPegawaiScreenState extends State<AddPegawaiScreen> {
         ),
         backgroundColor: Colors.blue, // Warna background app bar biru
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-          elevation: 4,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextFormField(
-                    controller: firstnameController,
-                    decoration: InputDecoration(labelText: 'First Name'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'First Name cannot be empty';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 12),
-                  TextFormField(
-                    controller: lastnameController,
-                    decoration: InputDecoration(labelText: 'Last Name'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Last Name cannot be empty';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 12),
-                  TextFormField(
-                    controller: phonenumberController,
-                    decoration: InputDecoration(labelText: 'Phone Number'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Phone Number cannot be empty';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 12),
-                  TextFormField(
-                    controller: emailController,
-                    decoration: InputDecoration(labelText: 'Email'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Email cannot be empty';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: addPegawai,
-                    child: Text('Tambah'),
-                  ),
-                ],
+      body: ListView(
+        padding: EdgeInsets.all(16.0),
+        children: [
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      controller: firstnameController,
+                      decoration: InputDecoration(labelText: 'First Name'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'First Name cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: lastnameController,
+                      decoration: InputDecoration(labelText: 'Last Name'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Last Name cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: phonenumberController,
+                      decoration: InputDecoration(labelText: 'Phone Number'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Phone Number cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      controller: emailController,
+                      decoration: InputDecoration(labelText: 'Email'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email cannot be empty';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedGender,
+                      decoration: InputDecoration(
+                        labelText: 'Jenis Kelamin',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ['Laki-laki', 'Perempuan']
+                          .map((label) => DropdownMenuItem(
+                        child: Text(label),
+                        value: label,
+                      ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedGender = value!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      value: selectedStatus,
+                      decoration: InputDecoration(
+                        labelText: 'Status',
+                        border: OutlineInputBorder(),
+                      ),
+                      items: ['Pegawai Tetap', 'Non Pegawai Tetap']
+                          .map((label) => DropdownMenuItem(
+                        child: Text(label),
+                        value: label,
+                      ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedStatus = value!;
+                        });
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: addPegawai,
+                      child: Text('Tambah'),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

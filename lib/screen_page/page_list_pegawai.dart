@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:latihan_crud_pegawai/model/model_pegawai.dart';
 import 'package:latihan_crud_pegawai/screen_page/page_add_pegawai.dart';
 import 'package:latihan_crud_pegawai/screen_page/page_detail_pegawai.dart';
+import 'package:latihan_crud_pegawai/screen_page/page_edit_pegawai.dart';
 
 class PegawaiScreen extends StatefulWidget {
   @override
@@ -23,7 +24,7 @@ class _PegawaiScreenState extends State<PegawaiScreen> {
   Future<void> fetchPegawai() async {
     try {
       final response =
-      await http.get(Uri.parse('http://192.168.40.142/pegawai/getPegawai.php'));
+      await http.get(Uri.parse('http://192.168.226.142/pegawai/getPegawai.php'));
       if (response.statusCode == 200) {
         final List<Datum> parsedPegawai =
             modelPegawaiFromJson(response.body).data;
@@ -53,91 +54,15 @@ class _PegawaiScreenState extends State<PegawaiScreen> {
     }
   }
 
-  void editPegawaiDialog(Datum pegawai) {
-    final TextEditingController firstnameController =
-    TextEditingController(text: pegawai.firstname);
-    final TextEditingController lastnameController =
-    TextEditingController(text: pegawai.lastname);
-    final TextEditingController phonenumberController =
-    TextEditingController(text: pegawai.phonenumber);
-    final TextEditingController emailController =
-    TextEditingController(text: pegawai.email);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit Pegawai'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: firstnameController,
-                decoration: InputDecoration(hintText: 'First Name'),
-              ),
-              TextField(
-                controller: lastnameController,
-                decoration: InputDecoration(hintText: 'Last Name'),
-              ),
-              TextField(
-                controller: phonenumberController,
-                decoration: InputDecoration(hintText: 'Phone Number'),
-              ),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(hintText: 'Email'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            TextButton(
-              child: Text('Save'),
-              onPressed: () async {
-                final firstname = firstnameController.text;
-                final lastname = lastnameController.text;
-                final phonenumber = phonenumberController.text;
-                final email = emailController.text;
-
-                if (firstname.isEmpty ||
-                    lastname.isEmpty ||
-                    phonenumber.isEmpty ||
-                    email.isEmpty) {
-                  _showErrorSnackBar('All fields are required');
-                  return;
-                }
-
-                try {
-                  final response = await http.put(
-                    Uri.parse(
-                        'http://192.168.40.142/pegawai/editPegawai.php?id=${pegawai.id}'),
-                    headers: {'Content-Type': 'application/json'},
-                    body: json.encode({
-                      'firstname': firstname,
-                      'lastname': lastname,
-                      'phonenumber': phonenumber,
-                      'email': email,
-                    }),
-                  );
-
-                  if (response.statusCode == 200) {
-                    fetchPegawai(); // Refresh pegawai list after editing
-                    Navigator.pop(context);
-                  } else {
-                    _showErrorSnackBar('Failed to edit pegawai');
-                  }
-                } catch (e) {
-                  _showErrorSnackBar('Failed to edit pegawai: $e');
-                }
-              },
-            ),
-          ],
-        );
-      },
+  void navigateToEditPegawaiScreen(Datum pegawai) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => EditPegawaiScreen(pegawai: pegawai)),
     );
+
+    if (result != null && result) {
+      fetchPegawai(); // Refresh list if pegawai edited successfully
+    }
   }
 
   void deletePegawaiDialog(Datum pegawai) {
@@ -156,8 +81,7 @@ class _PegawaiScreenState extends State<PegawaiScreen> {
               onPressed: () async {
                 try {
                   final response = await http.delete(
-                    Uri.parse(
-                        'http://192.168.40.142/pegawai/deletePegawai.php?id=${pegawai.id}'),
+                    Uri.parse('http://192.168.226.142/pegawai/deletePegawai.php?id=${pegawai.id}'),
                   );
 
                   if (response.statusCode == 200) {
@@ -236,7 +160,7 @@ class _PegawaiScreenState extends State<PegawaiScreen> {
                 children: [
                   IconButton(
                     icon: Icon(Icons.edit, color: Colors.orange),
-                    onPressed: () => editPegawaiDialog(pegawaiItem),
+                    onPressed: () => navigateToEditPegawaiScreen(pegawaiItem),
                   ),
                   IconButton(
                     icon: Icon(Icons.delete, color: Colors.red),
